@@ -34,7 +34,7 @@ public class Menus {
     }
 
     public void mainMenuDisplay(){
-        System.out.println("""
+        System.out.print("""
                 ===============Main Menu================
                        >A.....Account Information
                        >T..........Trade Security
@@ -45,7 +45,7 @@ public class Menus {
     }
 
     public void lookUpMenu(){
-        System.out.println("""
+        System.out.print("""
                 ================Search Ticker===============
                     Type the ticker you want to look up
                     You can Lookup single ticker
@@ -76,7 +76,7 @@ public class Menus {
     }
 
     public void wantToContinue(){
-        System.out.println("""
+        System.out.print("""
                 =========================================================================
                   If you want to continue enter "C" or enter "G" to Go back to the Menu
                 =========================================================================
@@ -84,7 +84,7 @@ public class Menus {
     }
 
     public void tradeMessage(){
-        System.out.println("""
+        System.out.print("""
                 =============================================================================
                             Enter "B" to buy a security or "S" to sell a security
                             Enter "goback" to go back to the main menu

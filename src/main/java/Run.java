@@ -113,10 +113,9 @@ public class Run {
 
                 // For buying a security
                 case ("T"):{
-                    menu.clearScreen();
-                    do {
 
-                        //Show current trades open --> write a method
+                    do {
+                        menu.clearScreen();
                         menu.tradeMessage();
                         input = scanner.nextLine().toUpperCase();
 
@@ -134,9 +133,11 @@ public class Run {
                                 input = scanner.nextLine().toUpperCase();
                                 if (input.equals("Y")){
                                     if (inspect.alterTables(username, order.getSymbol(), "sell")){
+
                                         System.out.println("CONFIRMATION: trade successfully closed");
                                     }
                                     else{
+
                                         System.out.println("TRADE COULD NOT BE CLOSED");
                                     }
                                 }
@@ -148,7 +149,7 @@ public class Run {
                                 System.out.println("How many stocks of "+order.getSymbol()+" do you want to buy?");
                                 order.setOrderSize(scanner.nextInt());
                                 //check if the order can be fulfilled with the amount in the balance.
-                                if (inspect.getAccountBalance(username) >= (order.getOrderSize()*new GetData(order.getSymbol()).getCurrentPrice().get(0))) {
+                                if (inspect.getAccountBalance(username) >= (order.getOrderSize() * new GetData(order.getSymbol()).getCurrentPrice().get(0))) {
                                     if (inspect.openTrade(username, order.getSymbol(), "buy", order.getOrderSize())) {
                                         System.out.println("CONFIRMATION: successfully opened a new order");
                                     }
@@ -172,9 +173,11 @@ public class Run {
                                 input = scanner.nextLine().toUpperCase();
                                 if (input.equals("Y")){
                                     if (inspect.alterTables(username, order.getSymbol(), "buy")){
+
                                         System.out.println("CONFIRMATION: trade successfully closed");
                                     }
                                     else{
+
                                         System.out.println("TRADE COULD NOT BE CLOSED");
                                     }
                                 }
