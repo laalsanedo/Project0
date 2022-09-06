@@ -299,7 +299,7 @@ public class Database {
         double updatedBalance = 0;
         ResultSet resultSet1;
         double balance = getAccountBalance(username);
-        System.out.println(balance);
+
         String query1 = "select symbol, entry_price, no_of_shares, order_type, p_l, balance, trade_id, current_price " +
                 "from trade_open join user_info on user_id = ?";
         String query2 = "UPDATE user_info set balance = ? where id = ?";
@@ -322,7 +322,7 @@ public class Database {
                     p_l = (resultSet.getDouble(2) - current_price)*resultSet.getInt(3);
                 }
                 balance += p_l;
-                System.out.println(balance);
+
                 //updating the current price and p_l:
                 preparedStatement1 = connection.prepareStatement(query4);
                 preparedStatement1.setDouble(1, current_price);

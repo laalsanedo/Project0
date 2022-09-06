@@ -146,18 +146,18 @@ public class Run {
                     System.out.println("\n\nOPEN TRADE STATISTICS");
                     System.out.println("Total Open Trades: "+ OT);
                     System.out.printf("Total Profit or Loss on Open Trades: %,.2f\n", OPL);
-                    System.out.println("Total Winners currently closed: "+OW);
-                    System.out.println("Total Winner currently closed in percentage: "+WOper);
-                    System.out.println("Total Losers currently closed: "+(OT -OW));
-                    System.out.println("Total Losers currently closed in percentage: " +((WOper != 0)?(100 - WOper): 0));
+                    System.out.println("Total Winners currently open: "+OW);
+                    System.out.println("Total Winner currently open in percentage: "+WOper);
+                    System.out.println("Total Losers currently open: "+(OT -OW));
+                    System.out.println("Total Losers currently open in percentage: " +((WOper != 0)?(100 - WOper): 0));
 
                     System.out.println("\n\nCLOSED TRADE STATISTICS");
                     System.out.println("Total Closed Trades: "+ CT);
                     System.out.printf("Total Profit or Loss on Closed Trades: %,.2f\n", CPL);
-                    System.out.println("Total Winners currently open: "+CW);
-                    System.out.println("Total Winner currently open in percentage: "+ WCper);
-                    System.out.println("Total Losers currently open: "+(CT-CW));
-                    System.out.println("Total Losers currently open in percentage: "+(100 - WCper));
+                    System.out.println("Total Winners currently closed: "+CW);
+                    System.out.println("Total Winner currently closed in percentage: "+ WCper);
+                    System.out.println("Total Losers currently closed: "+(CT-CW));
+                    System.out.println("Total Losers currently closed in percentage: "+(100 - WCper));
 
 
                     System.out.println("\nIf you want to go back to the main menu enter 'C': ");
@@ -169,9 +169,8 @@ public class Run {
 
                 // For buying a security
                 case ("T"):{
-
+                    menu.clearScreen();
                     do {
-                        menu.clearScreen();
                         menu.tradeMessage();
                         input = scanner.nextLine().toUpperCase();
 
