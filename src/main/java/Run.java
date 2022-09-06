@@ -1,3 +1,6 @@
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.Scanner;
 
 public class Run {
@@ -13,6 +16,10 @@ public class Run {
     GetData getData;
     InspectDatabase inspect;
     Order order;
+
+    private final static Logger log = LogManager.getLogger("Run");
+
+
 
     // Constructor to initialize the variables.
     public Run(){
@@ -107,8 +114,57 @@ public class Run {
 
                 // For looking up account
                 case ("A"):{
+
+                    menu.clearScreen();
+                    int CT = inspect.getTotalClosedTrades(username);
+                    int OT = inspect.getTotalOpenTrades(username);
+                    double CPL = inspect.getClosedTradePL(username);
+                    double OPL = inspect.getOpenTradePL(username);
+                    int CW = inspect.getNumOfCWinner(username);
+                    int OW = inspect.getNumOfOWinners(username);
+                    double WTper = ((CW+OW)*100/(CT+OT));
+                    double WCper = 0;
+                    if (CT != 0 ){
+                        WCper = CW*100/CT;
+                    }
+                    double WOper = 0;
+
+                    if (OT != 0){
+                        WOper = OW*100/OT;
+                    }
+
+
                     inspect.UserInfo(username, password);
-                    break;
+                    System.out.println("\n\nACCOUNT STATISTICS:");
+                    System.out.println("Total Trades (incl open trade): "+(CT+OT));
+                    System.out.printf("Total Profit or Loss (incl open trade): %,.2f\n",(OPL+CPL));
+                    System.out.println("Total Winners (incl open trade): "+(CW+OW));
+                    System.out.println("Total Winners in percentage (incl open trade): "+WTper+"%");
+                    System.out.println("Total Losers (incl open trade): "+((CT+OT) - (CW+OW)));
+                    System.out.println("Total Losers in percentage (incl open trade): "+(100-WTper)+"%");
+
+                    System.out.println("\n\nOPEN TRADE STATISTICS");
+                    System.out.println("Total Open Trades: "+ OT);
+                    System.out.printf("Total Profit or Loss on Open Trades: %,.2f\n", OPL);
+                    System.out.println("Total Winners currently closed: "+OW);
+                    System.out.println("Total Winner currently closed in percentage: "+WOper);
+                    System.out.println("Total Losers currently closed: "+(OT -OW));
+                    System.out.println("Total Losers currently closed in percentage: " +((WOper != 0)?(100 - WOper): 0));
+
+                    System.out.println("\n\nCLOSED TRADE STATISTICS");
+                    System.out.println("Total Closed Trades: "+ CT);
+                    System.out.printf("Total Profit or Loss on Closed Trades: %,.2f\n", CPL);
+                    System.out.println("Total Winners currently open: "+CW);
+                    System.out.println("Total Winner currently open in percentage: "+ WCper);
+                    System.out.println("Total Losers currently open: "+(CT-CW));
+                    System.out.println("Total Losers currently open in percentage: "+(100 - WCper));
+
+
+                    System.out.println("\nIf you want to go back to the main menu enter 'C': ");
+                    input = scanner.nextLine().toUpperCase();
+                    if (input.equals("C") || !input.equals("C")) {
+                        break;
+                    }
                 }
 
                 // For buying a security
@@ -214,6 +270,7 @@ public class Run {
 
                 // For looking up a security
                 case ("L"):{
+                    menu.clearScreen();
                     //For looking up a security functionality.
                     do{
                         menu.lookUpMenu();

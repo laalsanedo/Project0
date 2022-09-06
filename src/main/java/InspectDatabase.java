@@ -39,4 +39,30 @@ public class InspectDatabase {
     public boolean openTrade(String username, String symbol, String order_type, int numOfShares){
         return database.openTrade(username, symbol, order_type, numOfShares);
     }
+
+    public int getTotalClosedTrades(String username){
+        return database.getTotalClosedTrades(username);
+    }
+
+    public int getTotalOpenTrades(String username){
+        return database.getTotalOpenTrades(username);
+    }
+
+    public double getClosedTradePL(String username){
+        return database.getClosedTradePL(username);
+    }
+
+    public double getOpenTradePL(String username){
+        return database.getOpenTradePL(username);
+    }
+
+    public int getNumOfOWinners(String username){
+        return database.getNumOfOWinners(username);
+    }
+
+    public int getNumOfCWinner(String username){
+        return database.getNumOfCWinners(username);
+    }
+
+
 }

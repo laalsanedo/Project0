@@ -1,6 +1,12 @@
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class Menus {
 
+    private final static Logger log = LogManager.getLogger("Menus");
+
     public void welcomeMessage(){
+
         System.out.print("""
                 **********************************
                 *           Hello User           *
@@ -25,12 +31,13 @@ public class Menus {
     }
 
     public void clearScreen(){
-        System.out.println("\\033[H\\033[2J");
+        System.out.print("\033[H\033[2J");
         System.out.flush();
     }
 
     public void welcomeBackMessage(String username){
-        System.out.println("Welcome back"+ username+"!");
+        log.info("Logging User: %s",username);
+        System.out.println("Welcome back: "+ username+"!");
     }
 
     public void mainMenuDisplay(){

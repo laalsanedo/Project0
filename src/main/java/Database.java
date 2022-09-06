@@ -35,7 +35,6 @@ public class Database {
     }
 
     public double getAccountBalance(String username){
-        refreshBalance(getUserID(username));
         try {
             preparedStatement = connection.prepareStatement("SELECT balance from user_info WHERE username = ?");
             preparedStatement.setString(1, username);
@@ -50,20 +49,6 @@ public class Database {
         return 0;
     }
 
-    public double getAccountBalance(int id){
-        try {
-            preparedStatement = connection.prepareStatement("SELECT balance from user_info WHERE id = ?");
-            preparedStatement.setInt(1, id);
-            resultSet = preparedStatement.executeQuery();
-            if (resultSet.next()){
-                return resultSet.getDouble(1);
-            }
-        } catch (SQLException e) {
-            System.out.println("Error occurred while retrieving account balance");
-            System.out.println(e);
-        }
-        return 0;
-    }
     // Check if the username and password exists.
     public boolean checkUser(String username, String password) {
         // Query to check if the username and password exists.
@@ -127,11 +112,10 @@ public class Database {
             preparedStatement.setString(1, username);
             preparedStatement.setString(2, password);
             resultSet =preparedStatement.executeQuery();
-
+            System.out.println("GENERAL INFORMATION:");
             if (resultSet.next()){
-                System.out.println("USER ID: "+resultSet.getInt(1)+
-                        "\nUSERNAME: "+resultSet.getString(2)+
-                        "\nACCOUNT BALANCE: "+resultSet.getDouble(4));
+                System.out.println("Username: "+resultSet.getString(2)+
+                        "\nAccount Balance: "+resultSet.getDouble(4));
             }
 
         } catch (SQLException e) {
@@ -191,7 +175,7 @@ public class Database {
     //To close any open trade of a particular order type and symbol under the user's account
     public boolean closeTrade(String username, String symbol, String order_type){
         int id = getUserID(username);
-        refreshBalance(id);
+        refreshBalance(username, id);
         //To find all the open trade of a particular order type and symbol under the user's account
         String query1 = "SELECT * from trade_open WHERE user_id = ? AND symbol = ? AND order_type = ?";
         //To insert the closed trade in table trade history.
@@ -219,7 +203,6 @@ public class Database {
                     preparedStatement1.executeUpdate();
                     orderTotalClose(username, resultSet.getDouble(5), resultSet.getInt(4));
                 }
-
                 return true;
             } catch (SQLException e) {
                 System.out.println("Error occurred when closing a buy trade");
@@ -243,10 +226,11 @@ public class Database {
                     preparedStatement1.setDouble(6, resultSet.getDouble(5));
                     preparedStatement1.setDouble(7, resultSet.getDouble(4)*(resultSet.getDouble(5)-cprice));
                     preparedStatement1.setInt(8, id);
+                    preparedStatement1.executeUpdate();
                     orderTotalClose(username, resultSet.getDouble(5), resultSet.getInt(4));
 
                 }
-                preparedStatement1.executeUpdate();
+
                 return true;
             } catch (SQLException e) {
                 System.out.println("Error occurred when closing a sell trade");
@@ -276,7 +260,7 @@ public class Database {
 
     public boolean openTrade(String username, String symbol, String order_type, int numOfShares){
         int id = getUserID(username);
-        refreshBalance(id);
+        refreshBalance(username, id);
         double current_price = new GetData(symbol).getCurrentPrice().get(0);
         String query1 = "INSERT INTO trade_open (trade_id, order_type, symbol, no_of_shares, entry_price, current_price, p_l, user_id)" +
                 "values (nextval('trade_id_increment'), ? , ? , ? , ?, ?, ?, ?);";
@@ -309,18 +293,17 @@ public class Database {
     //4) we will subtract the new p/L from the current account balance and the result will be the new account balance.
     //5) if new balance is less than 0 show an error that the account is 0 and should the account be funded with 10,000 again;
 
-    public void refreshBalance( int id) {
+    public void refreshBalance( String username, int id) {
 
         PreparedStatement preparedStatement1 , preparedStatement2, preparedStatement3, preparedStatement4;
         double updatedBalance = 0;
         ResultSet resultSet1;
-
+        double balance = getAccountBalance(username);
+        System.out.println(balance);
         String query1 = "select symbol, entry_price, no_of_shares, order_type, p_l, balance, trade_id, current_price " +
                 "from trade_open join user_info on user_id = ?";
         String query2 = "UPDATE user_info set balance = ? where id = ?";
-        String query3 = "UPDATE trade_open set p_l = ? where trade_id = ?";
-        String query4 = "UPDATE trade_open set current_price = ? where trade_id =?";
-        String query5 = "SELECT balance from user_info WHERE id = ?";
+        String query4 = "UPDATE trade_open set current_price = ?, p_l = ? where trade_id =?";
         try {
             // To get symbol, price, and p_l to update the balance
             preparedStatement = connection.prepareStatement(query1);
@@ -331,10 +314,6 @@ public class Database {
             while(resultSet.next()){
                 double current_price = new GetData(resultSet.getString(1)).getCurrentPrice().get(0);
                 double p_l = 0;
-                double new_balance = 0;
-                preparedStatement4 = connection.prepareStatement(query5);
-                preparedStatement4.setInt(1, id);
-                resultSet1 = preparedStatement4.executeQuery();
 
                 if (resultSet.getString(4).equals("buy")){
                     p_l = (current_price - resultSet.getDouble(2))*resultSet.getInt(3);
@@ -342,23 +321,17 @@ public class Database {
                 else {
                     p_l = (resultSet.getDouble(2) - current_price)*resultSet.getInt(3);
                 }
-                updatedBalance += p_l;
-
-                //updating the current price:
+                balance += p_l;
+                System.out.println(balance);
+                //updating the current price and p_l:
                 preparedStatement1 = connection.prepareStatement(query4);
                 preparedStatement1.setDouble(1, current_price);
-                preparedStatement1.setInt(2, resultSet.getInt(7));
+                preparedStatement1.setDouble(2, p_l);
+                preparedStatement1.setInt(3, resultSet.getInt(7));
                 preparedStatement1.executeUpdate();
-
-                //update p_l for the trade
-                preparedStatement3 = connection.prepareStatement(query3);
-                preparedStatement3.setDouble(1, p_l);
-                preparedStatement3.setInt(2, resultSet.getInt(7));
-                preparedStatement3.executeUpdate();
-
             }
-            double balance = getAccountBalance(id);
-            balance += updatedBalance;
+
+
             //update the balance
             preparedStatement2 = connection.prepareStatement(query2);
             preparedStatement2.setDouble(1, balance);
@@ -404,5 +377,106 @@ public class Database {
 
     }
 
+    public int getTotalClosedTrades(String username){
+        int id = getUserID(username);
+        String query = "SELECT count(trade_id) from trade_history WHERE user_id = ?";
+        try {
+            preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setInt(1, id);
+            resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()){
+                return resultSet.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.out.println("Error occurred while fetching total closed trade data from the database");
+            System.out.println(e);
+        }
+        return 0;
+    }
+
+    public int getTotalOpenTrades(String username){
+        int id = getUserID(username);
+        String query = "SELECT count(trade_id) from trade_open WHERE user_id = ?";
+        try {
+            preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setInt(1, id);
+            resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()){
+                return resultSet.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.out.println("Error occurred while fetching total open trade data from the database");
+            System.out.println(e);
+        }
+        return 0;
+    }
+
+    public double getOpenTradePL(String username){
+        int id= getUserID(username);
+        String query = "SELECT sum(p_l) from trade_open WHERE user_id = ?";
+        try {
+            preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setInt(1, id);
+            resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()){
+                return resultSet.getDouble(1);
+            }
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+
+        return 0;
+    }
+
+    public double getClosedTradePL(String username){
+        int id= getUserID(username);
+        String query = "SELECT sum(p_l) from trade_history WHERE user_id = ?";
+        try {
+            preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setInt(1, id);
+            resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()){
+                return resultSet.getDouble(1);
+            }
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+
+        return 0;
+    }
+
+    public int getNumOfCWinners(String username){
+        int id = getUserID(username);
+        String query = "SELECT count(trade_id) from trade_history WHERE p_l >=0 AND user_id = ?";
+        try {
+            preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setInt(1, id);
+            resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()){
+                return resultSet.getInt(1);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return 0;
+    }
+
+    public int getNumOfOWinners(String username){
+        int id = getUserID(username);
+        String query = "SELECT count(trade_id) from trade_open WHERE p_l >= 0 AND user_id = ?";
+        try {
+            preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setInt(1, id);
+            resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()){
+                return resultSet.getInt(1);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return 0;
+    }
 
 }
